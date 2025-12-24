@@ -100,7 +100,7 @@ const Report_Item = () => {
                         lastModified: Date.now()
                     });
                     setFormData({ ...formData, image: compressedFile });
-                }, 'image/jpeg', 0.8);
+                }, 'image/jpeg', 0.9);
             };
             
             img.src = URL.createObjectURL(file);

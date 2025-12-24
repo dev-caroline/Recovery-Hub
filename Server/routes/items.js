@@ -41,8 +41,8 @@ router.post('/items', upload.single('image'), async (req, res) => {
         if (req.file) {
             const result = await cloudinary.uploader.upload(req.file.path, {
                 transformation: [
-                    { width: 800, height: 600, crop: 'limit' },
-                    { quality: 'auto' }
+                    { width: 1000, height: 1000, crop: 'limit' },
+                    { quality: 'auto', format: 'auto' }
                 ]
             });
             imageUrl = result.secure_url;
