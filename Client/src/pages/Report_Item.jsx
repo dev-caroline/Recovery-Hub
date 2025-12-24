@@ -10,6 +10,7 @@ const Report_Item = () => {
         title: '',
         description: '',
         location: '',
+        date: '',
         image: null,
         email: ''
     });
@@ -22,6 +23,7 @@ const Report_Item = () => {
         data.append('title', formData.title);
         data.append('description', formData.description);
         data.append('location', formData.location);
+        data.append('date', formData.date);
         data.append('status', itemStatus);
         data.append('email', formData.email);
         if (formData.image) {
@@ -35,7 +37,7 @@ const Report_Item = () => {
             });
             if (response.ok) {
                 toast.success('Report submitted successfully!');
-                setFormData({ title: '', description: '', location: '', image: null, email: '' });
+                setFormData({ title: '', description: '', location: '', date: '', image: null, email: '' });
                 setItemStatus('lost');
                 e.target.reset();
             } else {
@@ -59,7 +61,50 @@ const Report_Item = () => {
     };
 
     const handleFileChange = (e) => {
-        setFormData({ ...formData, image: e.target.files[0] });
+        const file = e.target.files[0];
+        if (file) {
+            // Check file size (max 5MB)
+            if (file.size > 5 * 1024 * 1024) {
+                toast.error('Image size must be less than 5MB');
+                return;
+            }
+            
+            // Compress image
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
+            const img = new Image();
+            
+            img.onload = () => {
+                // Calculate new dimensions (max 800px width/height)
+                let { width, height } = img;
+                if (width > height) {
+                    if (width > 800) {
+                        height = (height * 800) / width;
+                        width = 800;
+                    }
+                } else {
+                    if (height > 800) {
+                        width = (width * 800) / height;
+                        height = 800;
+                    }
+                }
+                
+                canvas.width = width;
+                canvas.height = height;
+                
+                ctx.drawImage(img, 0, 0, width, height);
+                
+                canvas.toBlob((blob) => {
+                    const compressedFile = new File([blob], file.name, {
+                        type: 'image/jpeg',
+                        lastModified: Date.now()
+                    });
+                    setFormData({ ...formData, image: compressedFile });
+                }, 'image/jpeg', 0.8);
+            };
+            
+            img.src = URL.createObjectURL(file);
+        }
     };
 
     return (
@@ -113,7 +158,7 @@ const Report_Item = () => {
                             <textarea name='description' value={formData.description} onChange={handleInputChange} className='w-full p-2 border border-gray-300 rounded' rows='3' placeholder='Color, brand, model, etc.' required></textarea>
                         </div>
                         <div>
-                            <label className='block text-sm font-medium mb-1'>Upload an image of the item (optional)</label>
+                            <label className='block text-sm font-medium mb-1'>Upload an image of the item (optional, max 5MB)</label>
                             <input type='file' accept='image/*' onChange={handleFileChange} className='w-full p-2 border border-gray-300 rounded' />
                         </div>
                         <div>
@@ -122,7 +167,7 @@ const Report_Item = () => {
                         </div>
                         <div>
                             <label className='block text-sm font-medium mb-1'>When did you {itemStatus === 'lost' ? 'lose' : 'find'} it?</label>
-                            <input type='date' className='w-full p-2 border border-gray-300 rounded' required />
+                            <input type='date' name='date' value={formData.date} onChange={handleInputChange} className='w-full p-2 border border-gray-300 rounded' required />
                         </div>
                         <div>
                             <label className='block text-sm font-medium mb-1'>Any identifying features or serial numbers?</label>

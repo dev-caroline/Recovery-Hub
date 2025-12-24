@@ -39,56 +39,70 @@ router.post('/items', upload.single('image'), async (req, res) => {
     try {
         let imageUrl = '';
         if (req.file) {
-            const result = await cloudinary.uploader.upload(req.file.path);
+            const result = await cloudinary.uploader.upload(req.file.path, {
+                transformation: [
+                    { width: 800, height: 600, crop: 'limit' },
+                    { quality: 'auto' }
+                ]
+            });
             imageUrl = result.secure_url;
         }
         const newItem = new Item({ ...req.body, image: imageUrl });
         await newItem.save();
 
-        // Send confirmation email
-        const subject = newItem.status === 'lost' ? 'Lost Item Report Received' : 'Found Item Report Received';
-        const html = newItem.status === 'lost'
-            ? `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
-                <div style="background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                    <h2 style="color: #10b981; margin-bottom: 10px;">Recovery Hub</h2>
-                    <p style="color: #374151; line-height: 1.6;">We have received your lost item report for <strong style="color: #059669;">${newItem.title}</strong>. You will be contacted immediately if it is found.</p>
-                    <p style="color: #374151; margin-top: 20px;">Thank you for using Recovery Hub!</p>
-                </div>
-               </div>`
-            : `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
-                <div style="background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                    <h2 style="color: #10b981; margin-bottom: 10px;">Recovery Hub</h2>
-                    <p style="color: #374151; line-height: 1.6;">We have received your found item report for <strong style="color: #059669;">${newItem.title}</strong>. If it matches a lost item, the owner will be contacted.</p>
-                    <p style="color: #374151; margin-top: 20px;">Thank you for using Recovery Hub!</p>
-                </div>
-               </div>`;
-        await transporter.sendMail({
-            from: 'Recovery Hub <noreply@recoveryhub.com>',
-            to: newItem.email,
-            subject,
-            html
-        });
+        // Send response immediately
+        res.json(newItem);
 
-        // Check for match if found
-        if (newItem.status === 'found') {
-            const matches = await Item.find({ status: 'lost', title: newItem.title });
-            for (const match of matches) {
-                await transporter.sendMail({
-                    from: 'Recovery Hub <noreply@recoveryhub.com>',
-                    to: match.email,
-                    subject: 'Possible Match for Your Lost Item',
-                    html: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+        // Handle emails asynchronously
+        setImmediate(async () => {
+            try {
+                // Send confirmation email
+                const subject = newItem.status === 'lost' ? 'Lost Item Report Received' : 'Found Item Report Received';
+                const html = newItem.status === 'lost'
+                    ? `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
                         <div style="background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
                             <h2 style="color: #10b981; margin-bottom: 10px;">Recovery Hub</h2>
-                            <p style="color: #374151; line-height: 1.6;">A found item matching your lost <strong style="color: #059669;">${match.title}</strong> has been reported. Details: ${newItem.description}, Location: ${newItem.location}. Please contact us for more information.</p>
+                            <p style="color: #374151; line-height: 1.6;">We have received your lost item report for <strong style="color: #059669;">${newItem.title}</strong>. You will be contacted immediately if it is found.</p>
                             <p style="color: #374151; margin-top: 20px;">Thank you for using Recovery Hub!</p>
                         </div>
                        </div>`
+                    : `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+                        <div style="background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                            <h2 style="color: #10b981; margin-bottom: 10px;">Recovery Hub</h2>
+                            <p style="color: #374151; line-height: 1.6;">We have received your found item report for <strong style="color: #059669;">${newItem.title}</strong>. If it matches a lost item, the owner will be contacted.</p>
+                            <p style="color: #374151; margin-top: 20px;">Thank you for using Recovery Hub!</p>
+                        </div>
+                       </div>`;
+                await transporter.sendMail({
+                    from: 'Recovery Hub <noreply@recoveryhub.com>',
+                    to: newItem.email,
+                    subject,
+                    html
                 });
-            }
-        }
 
-        res.json(newItem);
+                // Check for match if found
+                if (newItem.status === 'found') {
+                    const matches = await Item.find({ status: 'lost', title: newItem.title });
+                    for (const match of matches) {
+                        await transporter.sendMail({
+                            from: 'Recovery Hub <noreply@recoveryhub.com>',
+                            to: match.email,
+                            subject: 'Possible Match for Your Lost Item',
+                            html: `<div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+                                <div style="background-color: #ffffff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                                    <h2 style="color: #10b981; margin-bottom: 10px;">Recovery Hub</h2>
+                                    <p style="color: #374151; line-height: 1.6;">A found item matching your lost <strong style="color: #059669;">${match.title}</strong> has been reported. Details: ${newItem.description}, Location: ${newItem.location}. Please contact us for more information.</p>
+                                    <p style="color: #374151; margin-top: 20px;">Thank you for using Recovery Hub!</p>
+                                </div>
+                               </div>`
+                        });
+                    }
+                }
+            } catch (emailError) {
+                console.error('Email sending failed:', emailError);
+            }
+        });
+
     } catch (err) {
         res.status(400).json({ error: err.message });
     }
