@@ -29,7 +29,7 @@ const Report_Item = () => {
         }
 
         try {
-            const response = await fetch('http://localhost:3500/api/items', {
+            const response = await fetch('https://recovery-hub.onrender.com/api/items', {
                 method: 'POST',
                 body: data
             });

@@ -8,7 +8,7 @@ const FoundPage = () => {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        fetch('http://localhost:3500/api/items')
+        fetch('https://recovery-hub.onrender.com/api/items')
             .then(res => res.json())
             .then(data => {
                 setItems(data.filter(item => item.status === 'found'));

@@ -10,7 +10,7 @@ const ItemDetails = () => {
     const [claimed, setClaimed] = useState(false);
 
     useEffect(() => {
-        fetch(`http://localhost:3500/api/items/${id}`)
+        fetch(`https://recovery-hub.onrender.com/api/items/${id}`)
             .then(res => res.json())
             .then(data => {
                 setItem(data);
@@ -25,7 +25,7 @@ const ItemDetails = () => {
     
     const handleClaim = async () => {
         try {
-            const response = await fetch(`http://localhost:3500/api/items/${id}`, {
+            const response = await fetch(`https://recovery-hub.onrender.com/api/items/${id}`, {
                 method: 'PUT',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ status: 'claimed' })
@@ -45,7 +45,7 @@ const ItemDetails = () => {
     const handleDelete = async () => {
         if (window.confirm('Are you sure you want to delete this item?')) {
             try {
-                const response = await fetch(`http://localhost:3500/api/items/${id}`, {
+                const response = await fetch(`https://recovery-hub.onrender.com/api/items/${id}`, {
                     method: 'DELETE'
                 });
                 if (response.ok) {
