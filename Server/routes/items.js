@@ -57,7 +57,7 @@ router.post('/items', upload.single('image'), async (req, res) => {
         setImmediate(async () => {
             try {
                 console.log('Starting email send process for:', newItem.email);
-                
+
                 // Send confirmation email
                 const subject = newItem.status === 'lost' ? 'Lost Item Report Received' : 'Found Item Report Received';
                 const html = newItem.status === 'lost'
@@ -75,7 +75,7 @@ router.post('/items', upload.single('image'), async (req, res) => {
                             <p style="color: #374151; margin-top: 20px;">Thank you for using Recovery Hub!</p>
                         </div>
                        </div>`;
-                
+
                 console.log('Sending email to:', newItem.email);
                 const mailResult = await transporter.sendMail({
                     from: 'Recovery Hub <noreply@recoveryhub.com>',
@@ -90,7 +90,7 @@ router.post('/items', upload.single('image'), async (req, res) => {
                     console.log('Checking for matches for found item:', newItem.title);
                     const matches = await Item.find({ status: 'lost', title: newItem.title });
                     console.log('Found', matches.length, 'potential matches');
-                    
+
                     for (const match of matches) {
                         console.log('Sending match notification to:', match.email);
                         await transporter.sendMail({
