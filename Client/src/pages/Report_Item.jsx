@@ -73,10 +73,12 @@ const Report_Item = () => {
             try {
                 // Compression options
                 const options = {
-                    maxSizeMB: 1, // Max 1MB after compression
-                    maxWidthOrHeight: 1200, // Max dimension 1200px
-                    useWebWorker: true, // Use web worker for better performance
-                    fileType: 'image/webp' // Convert to WebP for better compression
+                    maxSizeMB: 1.5, // Slightly larger for better quality
+                    maxWidthOrHeight: 1500, // Larger max dimension
+                    useWebWorker: true,
+                    fileType: 'image/webp',
+                    preserveExif: false, // Remove EXIF data to reduce size
+                    alwaysKeepResolution: false // Allow resizing
                 };
                 
                 const compressedFile = await imageCompression(file, options);
@@ -143,7 +145,7 @@ const Report_Item = () => {
                             <textarea name='description' value={formData.description} onChange={handleInputChange} className='w-full p-2 border border-gray-300 rounded' rows='3' placeholder='Color, brand, model, etc.' required></textarea>
                         </div>
                         <div>
-                            <label className='block text-sm font-medium mb-1'>Upload an image of the item (optional, max 10MB, will be optimized to WebP)</label>
+                            <label className='block text-sm font-medium mb-1'>Upload an image of the item (optional, max 10MB, optimized to WebP ~1.5MB)</label>
                             <input type='file' accept='image/*' onChange={handleFileChange} className='w-full p-2 border border-gray-300 rounded' />
                         </div>
                         <div>
