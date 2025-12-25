@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 const FoundPage = () => {
     const [items, setItems] = useState([]);
     const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
 
     useEffect(() => {
         fetch('https://recovery-hub.onrender.com/api/items')
@@ -21,6 +22,13 @@ const FoundPage = () => {
             });
     }, []);
 
+    // Filter items based on search term
+    const filteredItems = items.filter(item => 
+        item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.location.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
     return (
         <div>
             <div className='mt-6 sm:mt-10 flex flex-col sm:flex-row gap-3 justify-center px-4'>
@@ -34,14 +42,27 @@ const FoundPage = () => {
 
             <div className='text-center mt-5 sm:mt-8 w-full sm:w-11/12 lg:w-4/5 px-4 sm:px-6 lg:px-10 py-4 sm:py-8 mx-auto'>
                 <div className="relative mb-6 sm:mb-8">
-                    <input type="text" className='border border-gray-300 rounded w-full p-2 pl-10 focus:outline-none focus:ring-2 focus:ring-green-100 text-sm sm:text-base' placeholder="Search for lost items..." />
+                    <input 
+                        type="text" 
+                        value={searchTerm}
+                        onChange={(e) => setSearchTerm(e.target.value)}
+                        className='border border-gray-300 rounded w-full p-2 pl-10 focus:outline-none focus:ring-2 focus:ring-green-100 text-sm sm:text-base' 
+                        placeholder="Search for found items..." 
+                    />
                     <i className="bi bi-search absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400"></i>
                 </div>
                 {loading ? (
                     <div className="flex justify-center items-center"><div className="animate-spin rounded-full h-32 w-32 border-b-2 border-green-600"></div></div>
                 ) : (
                     <div className='grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-10' >
-                        {items.map(item => (
+                        {filteredItems.length === 0 && searchTerm ? (
+                            <div className='col-span-full text-center py-12'>
+                                <i className="bi bi-search text-gray-400 text-4xl mb-4"></i>
+                                <p className='text-gray-500 text-lg'>No items found matching "{searchTerm}"</p>
+                                <p className='text-gray-400 text-sm mt-2'>Try a different search term</p>
+                            </div>
+                        ) : (
+                            filteredItems.map(item => (
                             <div key={item._id} className='border rounded-xl overflow-hidden h-auto'>
                                 {item.image ? (
                                     <img src={item.image} alt={item.title} className='h-48 sm:h-64 w-full object-cover' />
@@ -62,7 +83,7 @@ const FoundPage = () => {
                                     </div>
                                 </div>
                             </div>
-                        ))}
+                        )))}
                     </div>
                 )}
             </div>
