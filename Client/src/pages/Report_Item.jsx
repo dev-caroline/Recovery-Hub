@@ -74,7 +74,7 @@ const Report_Item = () => {
                 // Compression options
                 const options = {
                     maxSizeMB: 1.5, // Slightly larger for better quality
-                    maxWidthOrHeight: 1500, // Larger max dimension
+                    maxWidthOrHeight: 3000, // Larger max dimension
                     useWebWorker: true,
                     fileType: 'image/webp',
                     preserveExif: false, // Remove EXIF data to reduce size
