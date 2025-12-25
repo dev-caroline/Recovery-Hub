@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { Link } from 'react-router-dom'
 import { toast } from 'react-toastify';
+import imageCompression from 'browser-image-compression';
 
 
 
@@ -60,50 +61,34 @@ const Report_Item = () => {
         setFormData({ ...formData, [name]: value });
     };
 
-    const handleFileChange = (e) => {
+    const handleFileChange = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            // Check file size (max 5MB)
-            if (file.size > 5 * 1024 * 1024) {
-                toast.error('Image size must be less than 5MB');
+            // Check file size (max 10MB before compression)
+            if (file.size > 10 * 1024 * 1024) {
+                toast.error('Image size must be less than 10MB');
                 return;
             }
             
-            // Compress image
-            const canvas = document.createElement('canvas');
-            const ctx = canvas.getContext('2d');
-            const img = new Image();
-            
-            img.onload = () => {
-                // Calculate new dimensions (max 800px width/height)
-                let { width, height } = img;
-                if (width > height) {
-                    if (width > 800) {
-                        height = (height * 800) / width;
-                        width = 800;
-                    }
-                } else {
-                    if (height > 800) {
-                        width = (width * 800) / height;
-                        height = 800;
-                    }
-                }
+            try {
+                // Compression options
+                const options = {
+                    maxSizeMB: 1, // Max 1MB after compression
+                    maxWidthOrHeight: 1200, // Max dimension 1200px
+                    useWebWorker: true, // Use web worker for better performance
+                    fileType: 'image/webp' // Convert to WebP for better compression
+                };
                 
-                canvas.width = width;
-                canvas.height = height;
+                const compressedFile = await imageCompression(file, options);
+                setFormData({ ...formData, image: compressedFile });
                 
-                ctx.drawImage(img, 0, 0, width, height);
-                
-                canvas.toBlob((blob) => {
-                    const compressedFile = new File([blob], file.name, {
-                        type: 'image/jpeg',
-                        lastModified: Date.now()
-                    });
-                    setFormData({ ...formData, image: compressedFile });
-                }, 'image/jpeg', 0.9);
-            };
-            
-            img.src = URL.createObjectURL(file);
+                toast.success('Image optimized successfully!');
+            } catch (error) {
+                console.error('Image compression failed:', error);
+                toast.error('Failed to optimize image');
+                // Fallback to original file
+                setFormData({ ...formData, image: file });
+            }
         }
     };
 
@@ -158,7 +143,7 @@ const Report_Item = () => {
                             <textarea name='description' value={formData.description} onChange={handleInputChange} className='w-full p-2 border border-gray-300 rounded' rows='3' placeholder='Color, brand, model, etc.' required></textarea>
                         </div>
                         <div>
-                            <label className='block text-sm font-medium mb-1'>Upload an image of the item (optional, max 5MB)</label>
+                            <label className='block text-sm font-medium mb-1'>Upload an image of the item (optional, max 10MB, will be optimized to WebP)</label>
                             <input type='file' accept='image/*' onChange={handleFileChange} className='w-full p-2 border border-gray-300 rounded' />
                         </div>
                         <div>
