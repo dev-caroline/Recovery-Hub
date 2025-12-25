@@ -56,6 +56,8 @@ router.post('/items', upload.single('image'), async (req, res) => {
         // Handle emails asynchronously
         setImmediate(async () => {
             try {
+                console.log('Starting email send process for:', newItem.email);
+                
                 // Send confirmation email
                 const subject = newItem.status === 'lost' ? 'Lost Item Report Received' : 'Found Item Report Received';
                 const html = newItem.status === 'lost'
@@ -73,17 +75,24 @@ router.post('/items', upload.single('image'), async (req, res) => {
                             <p style="color: #374151; margin-top: 20px;">Thank you for using Recovery Hub!</p>
                         </div>
                        </div>`;
-                await transporter.sendMail({
+                
+                console.log('Sending email to:', newItem.email);
+                const mailResult = await transporter.sendMail({
                     from: 'Recovery Hub <noreply@recoveryhub.com>',
                     to: newItem.email,
                     subject,
                     html
                 });
+                console.log('Email sent successfully:', mailResult.messageId);
 
                 // Check for match if found
                 if (newItem.status === 'found') {
+                    console.log('Checking for matches for found item:', newItem.title);
                     const matches = await Item.find({ status: 'lost', title: newItem.title });
+                    console.log('Found', matches.length, 'potential matches');
+                    
                     for (const match of matches) {
+                        console.log('Sending match notification to:', match.email);
                         await transporter.sendMail({
                             from: 'Recovery Hub <noreply@recoveryhub.com>',
                             to: match.email,
@@ -96,6 +105,7 @@ router.post('/items', upload.single('image'), async (req, res) => {
                                 </div>
                                </div>`
                         });
+                        console.log('Match notification sent to:', match.email);
                     }
                 }
             } catch (emailError) {
