@@ -1,9 +1,7 @@
-import React, { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import imageCompression from 'browser-image-compression';
-
-
 
 const Report_Item = () => {
     const [itemStatus, setItemStatus] = useState('lost');
@@ -45,7 +43,6 @@ const Report_Item = () => {
                 toast.error('Error submitting report');
             }
         } catch (error) {
-            console.error('Error:', error);
             toast.error('Error submitting report');
         } finally {
             setSubmitting(false);
@@ -64,31 +61,26 @@ const Report_Item = () => {
     const handleFileChange = async (e) => {
         const file = e.target.files[0];
         if (file) {
-            // Check file size (max 10MB before compression)
             if (file.size > 10 * 1024 * 1024) {
                 toast.error('Image size must be less than 10MB');
                 return;
             }
             
             try {
-                // Compression options
                 const options = {
-                    maxSizeMB: 1.5, // Slightly larger for better quality
-                    maxWidthOrHeight: 3000, // Larger max dimension
+                    maxSizeMB: 1.5,
+                    maxWidthOrHeight: 3000,
                     useWebWorker: true,
                     fileType: 'image/webp',
-                    preserveExif: false, // Remove EXIF data to reduce size
-                    alwaysKeepResolution: false // Allow resizing
+                    preserveExif: false,
+                    alwaysKeepResolution: false
                 };
                 
                 const compressedFile = await imageCompression(file, options);
                 setFormData({ ...formData, image: compressedFile });
-                
                 toast.success('Image optimized successfully!');
             } catch (error) {
-                console.error('Image compression failed:', error);
                 toast.error('Failed to optimize image');
-                // Fallback to original file
                 setFormData({ ...formData, image: file });
             }
         }
@@ -194,7 +186,7 @@ const Report_Item = () => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default Report_Item
+export default Report_Item;

@@ -1,7 +1,10 @@
 const express = require('express');
-const app = express()
-require('dotenv').config()
+const cors = require('cors');
+const mongoose = require('mongoose');
 const cloudinary = require('cloudinary').v2;
+require('dotenv').config();
+
+const app = express();
 
 cloudinary.config({
     cloud_name: process.env.CLOUD_NAME,
@@ -9,26 +12,13 @@ cloudinary.config({
     api_secret: process.env.API_SECRET
 });
 
-const mongoose = require('mongoose');
-const cors = require('cors')
-const uri = process.env.URI
-const port = process.env.PORT
-app.use(cors())
-app.use(express.json())
+app.use(cors());
+app.use(express.json());
 
+mongoose.connect(process.env.URI)
+    .then(() => console.log('MongoDB connected'))
+    .catch(err => console.error('MongoDB connection error:', err));
 
-mongoose.connect(uri)
-.then   (()=>{
-    console.log(`mongodb connected`);
-})
-.catch((err)=>{
-    console.log(err);
-})
-
-// Routes
 app.use('/api', require('./routes/items'));
 
-app.listen(3500, ()=>{
-    console.log('Server is running');
-    
-} )
+app.listen(3500, () => console.log('Server running on port 3500'));

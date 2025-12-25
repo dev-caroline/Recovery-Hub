@@ -1,10 +1,10 @@
-import React, { useState, useEffect } from 'react'
-import { Link, useParams, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react';
+import { Link, useParams, useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
 const ItemDetails = () => {
-    const { id } = useParams()
-    const navigate = useNavigate()
+    const { id } = useParams();
+    const navigate = useNavigate();
     const [item, setItem] = useState(null);
     const [loading, setLoading] = useState(true);
     const [claimed, setClaimed] = useState(false);
@@ -17,10 +17,7 @@ const ItemDetails = () => {
                 setClaimed(data.status === 'claimed');
                 setLoading(false);
             })
-            .catch(err => {
-                console.error(err);
-                setLoading(false);
-            });
+            .catch(() => setLoading(false));
     }, [id]);
     
     const handleClaim = async () => {
@@ -37,7 +34,6 @@ const ItemDetails = () => {
                 toast.error('Error claiming item');
             }
         } catch (error) {
-            console.error('Error:', error);
             toast.error('Error claiming item');
         }
     };
@@ -55,7 +51,6 @@ const ItemDetails = () => {
                     toast.error('Error deleting item');
                 }
             } catch (error) {
-                console.error('Error:', error);
                 toast.error('Error deleting item');
             }
         }
@@ -108,7 +103,7 @@ const ItemDetails = () => {
                 </div>
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default ItemDetails
+export default ItemDetails;

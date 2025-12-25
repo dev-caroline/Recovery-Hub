@@ -1,12 +1,11 @@
 const express = require('express');
-const router = express.Router();
-const Item = require('../models/Item');
 const multer = require('multer');
 const cloudinary = require('cloudinary').v2;
 const nodemailer = require('nodemailer');
+const Item = require('../models/Item');
 
+const router = express.Router();
 const upload = multer({ dest: 'uploads/' });
-
 const transporter = nodemailer.createTransport({
     service: 'gmail',
     auth: {
@@ -15,7 +14,6 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-// Routes
 router.get('/items', async (req, res) => {
     try {
         const items = await Item.find();

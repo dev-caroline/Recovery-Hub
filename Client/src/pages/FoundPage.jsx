@@ -1,7 +1,6 @@
-import React, { useState, useEffect } from 'react'
-import { Link } from 'react-router-dom'
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-
 
 const FoundPage = () => {
     const [items, setItems] = useState([]);
@@ -15,14 +14,12 @@ const FoundPage = () => {
                 setItems(data.filter(item => item.status === 'found'));
                 setLoading(false);
             })
-            .catch(err => {
-                console.error(err);
+            .catch(() => {
                 setLoading(false);
                 toast.error('Error loading items');
             });
     }, []);
 
-    // Filter items based on search term
     const filteredItems = items.filter(item => 
         item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         item.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -88,7 +85,7 @@ const FoundPage = () => {
                 )}
             </div>
         </div>
-    )
-}
+    );
+};
 
-export default FoundPage
+export default FoundPage;

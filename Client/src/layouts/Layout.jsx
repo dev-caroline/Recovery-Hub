@@ -1,15 +1,11 @@
-import React from 'react'
-import Navbar from '../components/Navbar'
-import { Outlet } from 'react-router-dom'
+import { Outlet } from 'react-router-dom';
+import Navbar from '../components/Navbar';
 
+const Layout = () => (
+  <div className="bg-gray-100 min-h-screen">
+    <Navbar />
+    <Outlet />
+  </div>
+);
 
-const Layout = () => {
-  return (
-    <div className="bg-gray-100 min-h-screen">
-        <Navbar/>
-        <Outlet/>
-    </div>
-  )
-}
-
-export default Layout
+export default Layout;
